@@ -4,6 +4,7 @@ from evaluation import *
 from opening_book import Book
 import pickle
 import lichess
+import random
 
 inf = float('inf')
 poscount = 0
