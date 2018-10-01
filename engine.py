@@ -29,11 +29,17 @@ def search(node, color, variant, depth):
 def negamax(node, a, b, color, variant, depth=DEPTH):
 	global poscount
 
+	if node.is_stalemate():
+		return (0, None)
+
 	if node.is_checkmate():
 		return (-inf, None)
 
 	if (depth == 0):
-		return (evaluate(node, variant) * color, None)
+		if node.is_check():
+			depth += 1
+		else:
+			return (evaluate(node, variant) * color, None)
 
 	moves = list(node.legal_moves)
 
@@ -42,11 +48,10 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 
 	for move in moves:
 		poscount+=1
+
 		node.push(move)
 		result = negamax(node, -b, -a, -color, variant, depth-1)
-
 		value = -result[0]
-
 		node.pop()
 		if value > best_value:
 			best_value = value
