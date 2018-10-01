@@ -18,10 +18,10 @@ def field_to_coords(field):
 def get_piece_value(piece):
     piece_score = {
         "p": 100,
-        "n": 288,
-        "b": 345,
-        "r": 480,
-        "q": 1077,
+        "n": 350,
+        "b": 370,
+        "r": 525,
+        "q": 1000,
         "k": 1000000
     }
 
@@ -32,7 +32,7 @@ def get_piece_value(piece):
 
     return value
 
-def evaluate(node):
+def evaluate(node, variant):
     score = 0
 
     for field in fields:

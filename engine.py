@@ -1,6 +1,6 @@
 import chess
 import time
-from evaluation import *
+from evaluation.evaluation import *
 from opening_book import Book
 import pickle
 import lichess
