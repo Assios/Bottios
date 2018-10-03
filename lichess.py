@@ -79,8 +79,7 @@ def play_game(game_id, event_queue):
 
 	if variant == 'atomic':
 		board = chess.variant.AtomicBoard()
-		if game['black']['id'] == BOT_ID:
-			current_book = atomic_black
+		current_book = atomic_black
 	else:
 		current_book = standard_book
 		board = chess.Board()
@@ -91,7 +90,9 @@ def play_game(game_id, event_queue):
 		start_color = -1
 		my_time = 'wtime'
 
-		bot_move = search(board, color=-start_color, variant=variant, depth=3)
+		#bot_move = search(board, color=-start_color, variant=variant, depth=3)
+		book_move = current_book.get_moves([])
+		bot_move = random.choice(book_move)
 
 		make_move(game_id, bot_move)
 		fens.append(board.fen()[:-9].strip())

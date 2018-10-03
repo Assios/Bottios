@@ -29,7 +29,7 @@ def search(node, color, variant, depth):
 def negamax(node, a, b, color, variant, depth=DEPTH):
 	global poscount
 
-	if node.is_stalemate():
+	if node.is_stalemate() or node.can_claim_draw():
 		return (0, None)
 
 	if node.is_checkmate():
