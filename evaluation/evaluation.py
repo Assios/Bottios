@@ -13,9 +13,9 @@ def field_to_coords(field):
     col = "ABCDEFGH".find(x)
     row = 8 - int(y)
 
-    return(row,col)
+    return(row,col) 
 
-def get_piece_value(piece):
+def get_piece_value(piece, variant="standard"):
     piece_score = {
         "p": 100,
         "n": 350,
@@ -25,14 +25,26 @@ def get_piece_value(piece):
         "k": 1000000
     }
 
-    value = piece_score.get(piece.lower())
+    atomic_piece_score = {
+        "p": 100,
+        "n": 150,
+        "b": 150,
+        "r": 300,
+        "q": 600,
+        "k": 1000000
+    }
+
+    if variant == "atomic":
+        value = atomic_piece_score.get(piece.lower())
+    else:
+        value = piece_score.get(piece.lower())        
 
     if (piece.islower()):
         return -value
 
     return value
 
-def evaluate(node, variant):
+def evaluate(node, variant="standard"):
     score = 0
 
     for field in fields:
@@ -41,7 +53,7 @@ def evaluate(node, variant):
         if piece:
             p = str(piece)
 
-            score += get_piece_value(p)
+            score += get_piece_value(p, variant)
             field_coords = field_to_coords(field)
             piece_value = pst[p.lower()]
 

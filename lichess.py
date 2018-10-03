@@ -9,10 +9,14 @@ from keys import AUTHENTICATION_TOKEN
 from engine import *
 import random
 from opening_book import Book
+import chess.variant
 
 BASE_URL = 'https://lichess.org/'
 BOT_ID = 'bottios'
 headers = {'Authorization': 'Bearer %s' % AUTHENTICATION_TOKEN}
+
+standard_book = Book("penguin.book")
+atomic_black = Book("atomic_black.book")
 
 def time_to_depth(time):
 	depth = 3
@@ -59,22 +63,35 @@ def stream_events(event_queue):
 		else:
 			event_queue.put_nowait({'type': 'ping'})
 
-def play_game(game_id, event_queue, variant):
+def play_game(game_id, event_queue):
 	start_color = 1
 	my_time = 'btime'
 	game_stream = game_updates(game_id).iter_lines()
 
-	game = json.loads(next(game_stream).decode('utf-8'))
+	print('GAME_STREAM')
+	print(game_stream)
 
-	board = chess.Board()
-	fens = []
+	game = json.loads(next(game_stream).decode('utf-8'))
+	variant = game['variant']['key']
+
 	in_book = True
+	current_book = None
+
+	if variant == 'atomic':
+		board = chess.variant.AtomicBoard()
+		if game['black']['id'] == BOT_ID:
+			current_book = atomic_black
+	else:
+		current_book = standard_book
+		board = chess.Board()
+
+	fens = []
 
 	if game['white']['id'] == BOT_ID:
 		start_color = -1
 		my_time = 'wtime'
 
-		bot_move = search(board, color=-start_color, variant="standard", depth=3)
+		bot_move = search(board, color=-start_color, variant=variant, depth=3)
 
 		make_move(game_id, bot_move)
 		fens.append(board.fen()[:-9].strip())
@@ -89,10 +106,13 @@ def play_game(game_id, event_queue, variant):
 
 			moves = upd['moves'].split(' ')
 
-			if (in_book):
-				book_move = book.get_moves(moves)
+			if (in_book and current_book):
+				book_move = current_book.get_moves(moves)
+			else:
+				book_move = None
 
 			if in_book and not book_move:
+				print(in_book)
 				chat(game_id, "I'm out of book! :O")
 				print("Out of book!")
 				in_book = False
@@ -103,7 +123,7 @@ def play_game(game_id, event_queue, variant):
 				bot_move = random.choice(book_move)
 				bot_move = chess.Move.from_uci(bot_move)
 			else:
-				bot_move = search(board, color=-start_color, variant="standard", depth=time_to_depth(upd[my_time]))
+				bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time]))
 
 			print(bot_move)
 
@@ -122,14 +142,13 @@ if __name__ == '__main__':
 		while True:
 			event = event_queue.get()
 
-			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'kingOfTheHill')):
+			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'atomic')):
 				_id = event['challenge']['id'].strip()
-				print(_id)
+
 				accept_challenge(_id)
 			elif event['type'] == 'gameStart':
-				variant = "standard"
 				game_id = event['game']['id']
-				pool.apply_async(play_game, [game_id, event_queue, variant])
+				pool.apply_async(play_game, [game_id, event_queue])
 
 	control_stream.terminate()
 	control_stream.join()

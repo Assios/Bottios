@@ -5,12 +5,12 @@ from opening_book import Book
 import pickle
 import lichess
 import random
+import chess.variant
 
 inf = float('inf')
 poscount = 0
 
 DEPTH = 3
-book = Book("penguin.book")
 
 def search(node, color, variant, depth):
 	moves = list(node.legal_moves)
@@ -35,11 +35,11 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 	if node.is_checkmate():
 		return (-inf, None)
 
+	if (depth <= 1 and node.is_check()):
+		depth += 1
+
 	if (depth == 0):
-		if node.is_check():
-			depth += 1
-		else:
-			return (evaluate(node, variant) * color, None)
+		return (evaluate(node, variant) * color, None)
 
 	moves = list(node.legal_moves)
 
