@@ -17,6 +17,7 @@ headers = {'Authorization': 'Bearer %s' % AUTHENTICATION_TOKEN}
 
 standard_book = Book("penguin.book")
 atomic_black = Book("atomic_black.book")
+atomic_white = Book("atomic_white.book")
 
 def time_to_depth(time):
 	depth = 3
@@ -79,9 +80,9 @@ def play_game(game_id, event_queue):
 
 	if variant == 'atomic':
 		board = chess.variant.AtomicBoard()
-		current_book = atomic_black
 	else:
 		current_book = standard_book
+		print("Choosing book standard_book")
 		board = chess.Board()
 
 	fens = []
@@ -90,12 +91,19 @@ def play_game(game_id, event_queue):
 		start_color = -1
 		my_time = 'wtime'
 
+		if variant == 'atomic':
+			print("Choosing book atomic_white")
+			current_book = atomic_white
+
 		#bot_move = search(board, color=-start_color, variant=variant, depth=3)
 		book_move = current_book.get_moves([])
 		bot_move = random.choice(book_move)
 
 		make_move(game_id, bot_move)
 		fens.append(board.fen()[:-9].strip())
+	elif game['black']['id'] == BOT_ID and variant == 'atomic':
+		print("Choosing book atomic_black")
+		current_book = atomic_black
 
 	for event in game_stream:
 		upd = json.loads(event.decode('utf-8')) if event else None
