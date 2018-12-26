@@ -43,7 +43,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 		return (evaluate(node, variant) * color, None)
 
 	moves = list(node.legal_moves)
-	moves = sorted(moves, key=lambda x: board.is_capture(x), reverse=True)
+	moves = sorted(moves, key=lambda x: node.is_capture(x), reverse=True)
 
 	best_move = None
 	best_value = -inf

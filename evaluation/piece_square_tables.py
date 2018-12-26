@@ -151,3 +151,8 @@ atomic_pst = {
     "q": atomic_queen,
     "k": atomic_king
 }
+
+variant_pst = {
+    "standard": pst,
+    "atomic": atomic_pst
+}
