@@ -28,22 +28,22 @@ def get_adjacent_squares(field):
     try:
         adj_c.append(cols[cols.find(x) + 1])
     except IndexError:
-        print("Out of bounds")
+        pass
 
     try:
         adj_c.append(cols[cols.find(x) - 1])
     except IndexError:
-        print("Out of bounds")
+        pass
 
     try:
         adj_r.append(rows[rows.find(y) + 1])
     except IndexError:
-        print("Out of bounds")
+        pass
 
     try:
         adj_r.append(rows[rows.find(y) - 1])
     except IndexError:
-        print("Out of bounds")
+        pass
 
     for c in adj_c:
         for r in adj_r:
@@ -87,7 +87,7 @@ def atomic(node):
     return(piece)
 
 
-def evaluate(node, variant="standard"):
+def evaluate(node, color, variant="standard"):
     score = 0
 
     for field in fields:
@@ -97,11 +97,20 @@ def evaluate(node, variant="standard"):
             p = str(piece)
 
             # TODO atomic: score attacks on adjacent king squares 
-            if variant=='atomic' and p=='k':
-                adj = (get_adjacent_squares(field))
+            if variant=='atomic' and p.lower() == 'k':
+                if (color == 1 and p == 'k') or (color == -1 and p == 'K'):
+                    adj = (get_adjacent_squares(field))
+
+                    if color == 1:
+                        attackers = len([node.attackers(chess.BLACK, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.WHITE, getattr(chess, field))]) else 0
+                        score -= 1000 * attackers
+                    elif color == -1:
+                        attackers = len([node.attackers(chess.WHITE, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.BLACK, getattr(chess, field))]) else 0
+                        score += 1000 * attackers
 
             score += get_piece_value(p, variant)
             field_coords = field_to_coords(field)
+
             piece_value = variant_pst[variant][p.lower()]
 
             if p.islower():

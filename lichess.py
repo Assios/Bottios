@@ -20,10 +20,7 @@ atomic_black = Book("atomic_black.book")
 atomic_white = Book("atomic_white.book")
 
 def time_to_depth(time):
-	depth = 3
-
-	if time < 32000:
-		depth = 2
+	depth = 2
 
 	return depth
 

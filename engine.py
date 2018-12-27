@@ -40,7 +40,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 		depth += 1
 
 	if (depth == 0):
-		return (evaluate(node, variant) * color, None)
+		return (evaluate(node, color, variant) * color, None)
 
 	moves = list(node.legal_moves)
 	moves = sorted(moves, key=lambda x: node.is_capture(x), reverse=True)
