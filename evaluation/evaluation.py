@@ -25,25 +25,20 @@ def get_adjacent_squares(field):
     adj_c = []
     adj_r = []
 
-    try:
+    adj_c.append(x)
+
+    if (cols.find(x) < 7):
         adj_c.append(cols[cols.find(x) + 1])
-    except IndexError:
-        pass
 
-    try:
+    if (cols.find(x) > 0):
         adj_c.append(cols[cols.find(x) - 1])
-    except IndexError:
-        pass
 
-    try:
+    if (rows.find(y) < 7):
+        print(rows.find(y))
         adj_r.append(rows[rows.find(y) + 1])
-    except IndexError:
-        pass
 
-    try:
+    if (rows.find(y) > 0):
         adj_r.append(rows[rows.find(y) - 1])
-    except IndexError:
-        pass
 
     for c in adj_c:
         for r in adj_r:
@@ -102,11 +97,11 @@ def evaluate(node, color, variant="standard"):
                     adj = (get_adjacent_squares(field))
 
                     if color == 1:
-                        attackers = len([node.attackers(chess.BLACK, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.WHITE, getattr(chess, field))]) else 0
-                        score -= 250 * attackers
+                        attackers = len([node.attackers(chess.BLACK, getattr(chess, a)) for a in adj])
+                        score -= 100 * attackers
                     elif color == -1:
-                        attackers = len([node.attackers(chess.WHITE, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.BLACK, getattr(chess, field))]) else 0
-                        score += 250 * attackers
+                        attackers = len([node.attackers(chess.WHITE, getattr(chess, a)) for a in adj])
+                        score += 100 * attackers
 
             score += get_piece_value(p, variant)
             field_coords = field_to_coords(field)
