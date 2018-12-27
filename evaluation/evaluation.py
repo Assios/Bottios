@@ -34,7 +34,6 @@ def get_adjacent_squares(field):
         adj_c.append(cols[cols.find(x) - 1])
 
     if (rows.find(y) < 7):
-        print(rows.find(y))
         adj_r.append(rows[rows.find(y) + 1])
 
     if (rows.find(y) > 0):
@@ -96,12 +95,12 @@ def evaluate(node, color, variant="standard"):
                 if (color == 1 and p == 'k') or (color == -1 and p == 'K'):
                     adj = (get_adjacent_squares(field))
 
-                    if color == 1:
-                        attackers = len([node.attackers(chess.BLACK, getattr(chess, a)) for a in adj])
-                        score -= 100 * attackers
-                    elif color == -1:
-                        attackers = len([node.attackers(chess.WHITE, getattr(chess, a)) for a in adj])
-                        score += 100 * attackers
+                    if color == -1:
+                        attackers = sum([len(node.attackers(chess.BLACK, getattr(chess, a))) for a in adj])
+                        score -= 200 * attackers
+                    elif color == 1:
+                        attackers = sum([len(node.attackers(chess.WHITE, getattr(chess, a))) for a in adj])
+                        score += 200 * attackers
 
             score += get_piece_value(p, variant)
             field_coords = field_to_coords(field)
