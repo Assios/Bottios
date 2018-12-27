@@ -103,10 +103,10 @@ def evaluate(node, color, variant="standard"):
 
                     if color == 1:
                         attackers = len([node.attackers(chess.BLACK, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.WHITE, getattr(chess, field))]) else 0
-                        score -= 1000 * attackers
+                        score -= 250 * attackers
                     elif color == -1:
                         attackers = len([node.attackers(chess.WHITE, getattr(chess, a)) for a in adj]) if not len([node.attackers(chess.BLACK, getattr(chess, field))]) else 0
-                        score += 1000 * attackers
+                        score += 250 * attackers
 
             score += get_piece_value(p, variant)
             field_coords = field_to_coords(field)
