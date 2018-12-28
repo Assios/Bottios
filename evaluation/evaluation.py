@@ -26,6 +26,7 @@ def get_adjacent_squares(field):
     adj_r = []
 
     adj_c.append(x)
+    adj_r.append(y)
 
     if (cols.find(x) < 7):
         adj_c.append(cols[cols.find(x) + 1])
