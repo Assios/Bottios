@@ -75,12 +75,6 @@ def get_piece_value(piece, variant="standard"):
 
     return value
 
-def atomic(node):
-    # Get pieces attacking squares adjacent to king
-    #attackers = node.attackers(chess.WHITE, chess.F3)
-
-    return(piece)
-
 
 def evaluate(node, color, variant="standard"):
     score = 0
