@@ -10,6 +10,9 @@ from engine import *
 import random
 from opening_book import Book
 import chess.variant
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
 
 BASE_URL = 'https://lichess.org/'
 BOT_ID = 'bottios'
@@ -18,6 +21,22 @@ headers = {'Authorization': 'Bearer %s' % AUTHENTICATION_TOKEN}
 standard_book = Book("penguin.book")
 atomic_black = Book("atomic_black.book")
 atomic_white = Book("atomic_white.book")
+
+engine = create_engine('sqlite:///database.db')
+
+Base = declarative_base()
+
+class Player(Base):
+	__tablename__ = 'players'
+
+	id = Column(Integer, primary_key=True)
+	username = Column(String)
+	wins = Column(Integer)
+	draws = Column(Integer)
+	losses = Column(Integer)
+
+	def __repr__(self):
+		return "<User(name='%s', wins='%s', draws='%s', losses='%s')>" % (self.name, self.wins, self.draws, self.losses)
 
 def time_to_depth(time):
 	depth = 2
@@ -82,8 +101,6 @@ def play_game(game_id, event_queue):
 		print("Choosing book standard_book")
 		board = chess.Board()
 
-	fens = []
-
 	if game['white']['id'] == BOT_ID:
 		start_color = -1
 		my_time = 'wtime'
@@ -97,7 +114,7 @@ def play_game(game_id, event_queue):
 		bot_move = random.choice(book_move)
 
 		make_move(game_id, bot_move)
-		fens.append(board.fen()[:-9].strip())
+
 	elif game['black']['id'] == BOT_ID and variant == 'atomic':
 		print("Choosing book atomic_black")
 		current_book = atomic_black
@@ -131,10 +148,7 @@ def play_game(game_id, event_queue):
 			else:
 				bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time]))
 
-			print(bot_move)
-
 			make_move(game_id, bot_move)
-			fens.append(board.fen()[:-9].strip())
 
 if __name__ == '__main__':
 	manager = multiprocessing.Manager()
