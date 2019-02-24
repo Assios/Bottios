@@ -79,13 +79,15 @@ def get_piece_value(piece, variant="standard"):
 def evaluate(node, color, variant="standard"):
     score = 0
 
+    #mobility test
+    score += len(node.legal_moves)
+
     for field in fields:
         piece = node.piece_at(getattr(chess, field))
 
         if piece:
             p = str(piece)
 
-            # TODO atomic: score attacks on adjacent king squares 
             if variant=='atomic' and p.lower() == 'k':
                 if (color == 1 and p == 'k') or (color == -1 and p == 'K'):
                     adj = (get_adjacent_squares(field))
