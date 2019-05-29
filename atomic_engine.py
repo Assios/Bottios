@@ -3,7 +3,6 @@ import time
 from evaluation.evaluation import *
 from opening_book import Book
 import pickle
-import lichess
 import random
 import chess.variant
 

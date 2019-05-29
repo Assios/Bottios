@@ -75,7 +75,6 @@ def get_piece_value(piece, variant="standard"):
 
     return value
 
-
 def evaluate(node, color, variant="standard"):
     score = 0
 
