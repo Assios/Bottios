@@ -10,6 +10,7 @@ from engine import *
 import random
 from opening_book import Book
 import chess.variant
+import random
 
 BASE_URL = 'https://lichess.org/'
 BOT_ID = 'bottios'
@@ -19,8 +20,14 @@ standard_book = Book("penguin.book")
 atomic_black = Book("atomic_black.book")
 atomic_white = Book("atomic_white.book")
 
-def time_to_depth(time):
-	depth = 2
+def time_to_depth(time, variant="standard"):
+	depth=2
+
+	if variant=="antichess":
+		if time > 60 * 1000:
+			depth=5
+		else:
+			depth = 4
 
 	return depth
 
@@ -77,7 +84,9 @@ def play_game(game_id, event_queue):
 
 	if variant == 'atomic':
 		board = chess.variant.AtomicBoard()
-	else:
+	if variant == 'antichess':
+		board = chess.variant.GiveawayBoard()
+	if variant == 'standard':
 		current_book = standard_book
 		print("Choosing book standard_book")
 		board = chess.Board()
@@ -93,8 +102,13 @@ def play_game(game_id, event_queue):
 			current_book = atomic_white
 
 		#bot_move = search(board, color=-start_color, variant=variant, depth=3)
-		book_move = current_book.get_moves([])
-		bot_move = random.choice(book_move)
+
+		if current_book:
+			book_move = current_book.get_moves([])
+		if variant == 'antichess':
+			bot_move = random.choice(['e2e3', 'b2b3', 'g2g3'])
+		else:
+			bot_move = random.choice(book_move)
 
 		make_move(game_id, bot_move)
 		fens.append(board.fen()[:-9].strip())
@@ -129,7 +143,7 @@ def play_game(game_id, event_queue):
 				bot_move = random.choice(book_move)
 				bot_move = chess.Move.from_uci(bot_move)
 			else:
-				bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time]))
+				bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time], variant))
 
 			print(bot_move)
 
@@ -148,7 +162,7 @@ if __name__ == '__main__':
 		while True:
 			event = event_queue.get()
 
-			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'atomic')):
+			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'atomic') or (event['challenge']['variant']['key'] == 'antichess')):
 				_id = event['challenge']['id'].strip()
 
 				accept_challenge(_id)
