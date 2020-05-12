@@ -91,7 +91,7 @@ def play_game(game_id, event_queue):
 		print("Choosing book standard_book")
 		board = chess.Board()
 
-	fens = []
+	#fens = []
 
 	if game['white']['id'] == BOT_ID:
 		start_color = -1
@@ -111,7 +111,7 @@ def play_game(game_id, event_queue):
 			bot_move = random.choice(book_move)
 
 		make_move(game_id, bot_move)
-		fens.append(board.fen()[:-9].strip())
+		#fens.append(board.fen()[:-9].strip())
 	elif game['black']['id'] == BOT_ID and variant == 'atomic':
 		print("Choosing book atomic_black")
 		current_book = atomic_black
@@ -143,12 +143,21 @@ def play_game(game_id, event_queue):
 				bot_move = random.choice(book_move)
 				bot_move = chess.Move.from_uci(bot_move)
 			else:
-				bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time], variant))
+				num_pieces = sum(1 for c in str(board) if c.isalpha())
 
-			print(bot_move)
+				if num_pieces < 8:
+					print("TB")
+					bot_move = get_tablebase_move(board.fen())
+					print("Got TB move")
+					print(bot_move)
+				else:
+					bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time], variant))
+
+			if not bot_move:
+					bot_move = search(board, color=-start_color, variant=variant, depth=time_to_depth(upd[my_time], variant))
 
 			make_move(game_id, bot_move)
-			fens.append(board.fen()[:-9].strip())
+			#fens.append(board.fen()[:-9].strip())
 
 if __name__ == '__main__':
 	manager = multiprocessing.Manager()
