@@ -1,14 +1,14 @@
 import chess
 import time
 from evaluation.antichess_eval import *
-from evaluation.threecheck_evaluate import *
+from evaluation.threecheck_eval import threecheck_eval
 import random
 import chess.variant
 
 inf = float('inf')
 poscount = 0
 
-DEPTH = 5
+DEPTH = 3
 
 def search(node, color, variant, depth):
 	moves = list(node.legal_moves)
@@ -28,7 +28,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 	global poscount
 
 	if (depth == 0):
-		return (threecheck_evaluate(node, color, variant) * color, None)
+		return (threecheck_eval(node, color, variant) * color, None)
 
 	moves = list(node.legal_moves)
 
@@ -55,12 +55,12 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 
 
 if __name__ == "__main__":
-	board = chess.variant.GiveawayBoard()
+	board = chess.variant.ThreeCheckBoard()
 	moves = []
 
 	c = 0
 
-	while len(moves) and not board.is_variant_end():
+	while not board.is_variant_end():
 		if c%2==0:
 			move = input("move: \n\n")
 			move = chess.Move.from_uci(move)
@@ -69,7 +69,13 @@ if __name__ == "__main__":
 		else:
 			start_time = time.time()
 
-			move = search(board, color=-1, variant="antichess", depth=DEPTH)
+			#book_move = book.get_moves(moves)
+			book_move = None
+			if book_move:
+				move = random.choice(book_move)
+				move = chess.Move.from_uci(move)
+			else:
+				move = search(board, color=-1, variant="3check", depth=DEPTH)
 			elapsed = time.time() - start_time
 			print("--- %s moves ---" % (len(list(board.legal_moves))))
 			print("--- number of nodes: %s --" % poscount)

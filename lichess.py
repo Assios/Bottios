@@ -29,6 +29,12 @@ def time_to_depth(time, variant="standard"):
 		else:
 			depth = 4
 
+	if variant=="threeCheck":
+		if time > 120 * 1000:
+			depth= 3
+		else:
+			depth = 2
+
 	return depth
 
 def accept_challenge(game_id):
@@ -86,6 +92,8 @@ def play_game(game_id, event_queue):
 		board = chess.variant.AtomicBoard()
 	if variant == 'antichess':
 		board = chess.variant.GiveawayBoard()
+	if variant == 'threeCheck':
+		board = chess.variant.ThreeCheckBoard()
 	if variant == 'standard':
 		current_book = standard_book
 		print("Choosing book standard_book")
@@ -107,6 +115,8 @@ def play_game(game_id, event_queue):
 			book_move = current_book.get_moves([])
 		if variant == 'antichess':
 			bot_move = random.choice(['e2e3', 'b2b3', 'g2g3'])
+		if variant == 'threeCheck':
+			bot_move = random.choice(['e2e4'])	
 		else:
 			bot_move = random.choice(book_move)
 
@@ -162,7 +172,7 @@ if __name__ == '__main__':
 		while True:
 			event = event_queue.get()
 
-			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'atomic') or (event['challenge']['variant']['key'] == 'antichess')):
+			if event['type'] == 'challenge' and ((event['challenge']['variant']['key'] == 'standard') or (event['challenge']['variant']['key'] == 'atomic') or (event['challenge']['variant']['key'] == 'antichess') or (event['challenge']['variant']['key'] == 'threeCheck')):
 				_id = event['challenge']['id'].strip()
 
 				accept_challenge(_id)
