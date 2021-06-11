@@ -43,6 +43,9 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 	if (depth == 0) or (node.is_variant_end()):
 		if variant == "antichess":
 			return (antichess_evaluate(node, color, variant) * color, None)
+		if variant == "threeCheck":
+			return (threecheck_eval(node, color, variant) * color, None)
+
 		return (evaluate(node, color, variant) * color, None)
 
 	moves = list(node.legal_moves)

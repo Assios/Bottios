@@ -39,15 +39,38 @@ def threecheck_eval(node, color, variant="standard"):
     score = 0
 
     if (color == 1):
-        score += (node.remaining_checks[chess.BLACK] * 200) - (node.remaining_checks[chess.WHITE] * 200)
+        if node.remaining_checks[chess.WHITE] == 1:
+            score += 2400
+        if node.remaining_checks[chess.WHITE] == 2:
+            score += 444
 
         if (node.remaining_checks[chess.WHITE] == 0):
             score += 1000000
-    elif (color == 0):
-        score += (node.remaining_checks[chess.WHITE] * 200) - (node.remaining_checks[chess.BLACK] * 200)
 
-        if (node.remainin_checks[chess.BLACK] == 0):
-            score += 1000000        
+        if node.remaining_checks[chess.BLACK] == 1:
+            score -= 2400
+        if node.remaining_checks[chess.BLACK] == 2:
+            score -= 444
+
+        if (node.remaining_checks[chess.BLACK] == 0):
+            score -= 1000000       
+
+    elif (color == 0):
+        if node.remaining_checks[chess.BLACK] == 1:
+            score += 2400
+        if node.remaining_checks[chess.BLACK] == 2:
+            score += 444
+
+        if (node.remaining_checks[chess.BLACK] == 0):
+            score += 1000000
+
+        if node.remaining_checks[chess.WHITE] == 1:
+            score -= 2400
+        if node.remaining_checks[chess.WHITE] == 2:
+            score -= 444
+
+        if (node.remaining_checks[chess.WHITE] == 0):
+            score -= 1000000         
 
     for field in fields:
         piece = node.piece_at(getattr(chess, field))
