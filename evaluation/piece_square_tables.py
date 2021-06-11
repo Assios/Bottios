@@ -154,5 +154,6 @@ atomic_pst = {
 
 variant_pst = {
     "standard": pst,
-    "atomic": atomic_pst
+    "atomic": atomic_pst,
+    "3check": pst
 }

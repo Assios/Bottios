@@ -1,6 +1,7 @@
 import chess
 import time
 from evaluation.antichess_eval import *
+from evaluation.threecheck_evaluate import *
 import random
 import chess.variant
 
@@ -27,7 +28,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH):
 	global poscount
 
 	if (depth == 0):
-		return (antichess_evaluate(node, color, variant) * color, None)
+		return (threecheck_evaluate(node, color, variant) * color, None)
 
 	moves = list(node.legal_moves)
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
 	c = 0
 
-	while len(moves) and not (board.is_variant_end():
+	while len(moves) and not board.is_variant_end():
 		if c%2==0:
 			move = input("move: \n\n")
 			move = chess.Move.from_uci(move)
