@@ -3,6 +3,8 @@ from functools import reduce
 import operator
 import json
 from pprint import pprint
+import chess
+import chess.pgn
 import re
 
 def tree(): return defaultdict(tree)
@@ -18,13 +20,17 @@ def reformat(pgn):
 
 
 def create_book_from_pgn(pgn, outfile):
-	pgn = open('penguin.pgn')
+	pgn = open('zergei_3check_white.pgn')
 	game = chess.pgn.read_game(pgn)
 
 	out = open(outfile, "a")
 
+	c = 0
+
 	while game:
-		moves = game.main_line()
+		print(c)
+		c+=1
+		moves = game.mainline_moves()
 		opening_line = ' '.join([str(move) for move in moves][:60])
 		print(opening_line)
 		out.write(opening_line + "\n")
@@ -66,7 +72,5 @@ class Book():
 
 
 if __name__ == '__main__':
-	test_game = 'e2e4 e7e5 g1f3 b8c6'.split(' ')
+	create_book_from_pgn("", "zergei_white_2check.book")
 
-	book = Book()
-	print(book.get_moves(test_game))
