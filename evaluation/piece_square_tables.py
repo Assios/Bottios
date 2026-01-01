@@ -157,3 +157,81 @@ variant_pst = {
     "atomic": atomic_pst,
     "threeCheck": pst
 }
+
+# ============================================
+# OPTIMIZED: Pre-computed flattened PSTs
+# Indexed by square (0-63) for O(1) lookup
+# ============================================
+import chess
+
+def _flatten_pst_white(table):
+    """Flatten 8x8 table to 64-element tuple indexed by square (0-63).
+    For white pieces: square 0 = A1 (rank 1), maps to table[7][0]
+    """
+    flat = []
+    for sq in range(64):
+        file = sq % 8
+        rank = sq // 8
+        row = 7 - rank  # Flip: rank 0 (A1) -> row 7, rank 7 (A8) -> row 0
+        flat.append(table[row][file])
+    return tuple(flat)
+
+def _flatten_pst_black(table):
+    """Flatten 8x8 table for black pieces (mirrored perspective)."""
+    flat = []
+    for sq in range(64):
+        file = sq % 8
+        rank = sq // 8
+        row = rank  # No flip for black: rank 0 (A1) -> row 0
+        flat.append(table[row][file])
+    return tuple(flat)
+
+# Piece values indexed by piece type (1=PAWN, 2=KNIGHT, 3=BISHOP, 4=ROOK, 5=QUEEN, 6=KING)
+PIECE_VALUES = (0, 100, 350, 370, 525, 1000, 1000000)  # index 0 unused
+ATOMIC_PIECE_VALUES = (0, 100, 150, 150, 300, 600, 1000000)
+
+# Pre-computed PSTs for white pieces, indexed by piece_type then square
+PST_WHITE = {
+    "standard": (
+        None,  # 0 = no piece
+        _flatten_pst_white(pawn),
+        _flatten_pst_white(knight),
+        _flatten_pst_white(bishop),
+        _flatten_pst_white(rook),
+        _flatten_pst_white(queen),
+        _flatten_pst_white(king),
+    ),
+    "atomic": (
+        None,
+        _flatten_pst_white(atomic_pawn),
+        _flatten_pst_white(atomic_knight),
+        _flatten_pst_white(atomic_bishop),
+        _flatten_pst_white(atomic_rook),
+        _flatten_pst_white(atomic_queen),
+        _flatten_pst_white(atomic_king),
+    ),
+}
+PST_WHITE["threeCheck"] = PST_WHITE["standard"]
+
+# Pre-computed PSTs for black pieces
+PST_BLACK = {
+    "standard": (
+        None,
+        _flatten_pst_black(pawn),
+        _flatten_pst_black(knight),
+        _flatten_pst_black(bishop),
+        _flatten_pst_black(rook),
+        _flatten_pst_black(queen),
+        _flatten_pst_black(king),
+    ),
+    "atomic": (
+        None,
+        _flatten_pst_black(atomic_pawn),
+        _flatten_pst_black(atomic_knight),
+        _flatten_pst_black(atomic_bishop),
+        _flatten_pst_black(atomic_rook),
+        _flatten_pst_black(atomic_queen),
+        _flatten_pst_black(atomic_king),
+    ),
+}
+PST_BLACK["threeCheck"] = PST_BLACK["standard"]
