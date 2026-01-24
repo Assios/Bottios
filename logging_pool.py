@@ -28,5 +28,5 @@ class LogExceptions(object):
 
 
 class LoggingPool(Pool):
-    def apply_async(self, func, args=(), kwds={}, callback=None):
-        return Pool.apply_async(self, LogExceptions(func), args, kwds, callback)
+    def apply_async(self, func, args=(), kwds={}, callback=None, error_callback=None):
+        return Pool.apply_async(self, LogExceptions(func), args, kwds, callback, error_callback)

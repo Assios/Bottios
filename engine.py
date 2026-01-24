@@ -371,8 +371,8 @@ def search_with_time(node, color, variant, time_limit, min_depth=1, max_depth=20
 	print(f"Search complete: depth {completed_depth}, nodes: {poscount}, qnodes: {qnodes}, time: {total_time:.2f}s")
 
 	if not best_move:
-		return random.choice(moves)
-	return best_move
+		return random.choice(moves), 0
+	return best_move, best_score
 
 def negamax(node, a, b, color, variant, depth=DEPTH, ply=0, pv_move=None, null_move_allowed=True):
 	global poscount, tt_hits, transposition_table
