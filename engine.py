@@ -18,6 +18,7 @@ tt_hits = 0
 DEPTH = 2
 MAX_QUIESCE_DEPTH = 10  # Limit quiescence search depth
 MAX_KILLER_PLY = 64  # Maximum ply for killer moves
+MATE_SCORE = 10000000  # Must exceed max eval (king=1000000, threecheck bonus=1000000)
 
 # Transposition table entry types
 EXACT = 0      # Exact score
@@ -41,6 +42,23 @@ PIECE_VALUES = {
 	chess.QUEEN: 900,
 	chess.KING: 20000
 }
+
+def is_mate_score(score):
+	return abs(score) >= MATE_SCORE - 200
+
+def score_to_tt(score, ply):
+	if score >= MATE_SCORE - 200:
+		return score + ply
+	if score <= -MATE_SCORE + 200:
+		return score - ply
+	return score
+
+def score_from_tt(score, ply):
+	if score >= MATE_SCORE - 200:
+		return score - ply
+	if score <= -MATE_SCORE + 200:
+		return score + ply
+	return score
 
 def mvv_lva_score(board, move):
 	"""Most Valuable Victim - Least Valuable Attacker scoring for move ordering."""
@@ -106,7 +124,7 @@ def get_static_eval(node, color, variant):
 		return threecheck_eval(node, color, variant) * color
 	return evaluate(node, color, variant) * color
 
-def quiesce(node, a, b, color, variant, qdepth=0):
+def quiesce(node, a, b, color, variant, qdepth=0, ply=0):
 	"""
 	Quiescence search - continue searching captures until position is quiet.
 	This avoids the horizon effect where we evaluate mid-capture.
@@ -122,6 +140,7 @@ def quiesce(node, a, b, color, variant, qdepth=0):
 		# Only use TT if it was from same or deeper quiescence search
 		if tt_depth <= q_depth_key:
 			tt_hits += 1
+			tt_score = score_from_tt(tt_score, ply)
 			if tt_flag == EXACT:
 				return tt_score
 			elif tt_flag == LOWERBOUND:
@@ -133,7 +152,7 @@ def quiesce(node, a, b, color, variant, qdepth=0):
 
 	# Check for game end
 	if node.is_checkmate():
-		return -inf
+		return -MATE_SCORE + ply
 	if node.is_stalemate() or node.can_claim_draw():
 		return 0
 	if node.is_variant_end():
@@ -167,7 +186,7 @@ def quiesce(node, a, b, color, variant, qdepth=0):
 	for move in captures:
 		qnodes += 1
 		node.push(move)
-		score = -quiesce(node, -b, -a, -color, variant, qdepth + 1)
+		score = -quiesce(node, -b, -a, -color, variant, qdepth + 1, ply + 1)
 		node.pop()
 
 		if score > best_score:
@@ -175,7 +194,7 @@ def quiesce(node, a, b, color, variant, qdepth=0):
 
 		if score >= b:
 			# Store in TT before returning
-			transposition_table[pos_hash] = (q_depth_key, score, LOWERBOUND, None)
+			transposition_table[pos_hash] = (q_depth_key, score_to_tt(score, ply), LOWERBOUND, None)
 			return b  # Beta cutoff
 		if score > a:
 			a = score
@@ -187,7 +206,7 @@ def quiesce(node, a, b, color, variant, qdepth=0):
 		tt_flag = LOWERBOUND
 	else:
 		tt_flag = EXACT
-	transposition_table[pos_hash] = (q_depth_key, best_score, tt_flag, None)
+	transposition_table[pos_hash] = (q_depth_key, score_to_tt(best_score, ply), tt_flag, None)
 
 	return a
 
@@ -363,7 +382,7 @@ def search_with_time(node, color, variant, time_limit, min_depth=1, max_depth=20
 			break
 
 		# Check for forced mate - no need to search deeper
-		if abs(best_score) > 100000:
+		if is_mate_score(best_score):
 			print(f"Mate found at depth {current_depth}")
 			break
 
@@ -388,6 +407,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH, ply=0, pv_move=None, null_m
 
 		if tt_depth >= depth:
 			tt_hits += 1
+			tt_score = score_from_tt(tt_score, ply)
 			if tt_flag == EXACT:
 				return (tt_score, tt_move)
 			elif tt_flag == LOWERBOUND:
@@ -399,7 +419,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH, ply=0, pv_move=None, null_m
 				return (tt_score, tt_move)
 
 	if node.is_checkmate():
-		return (-inf, None)
+		return (-MATE_SCORE + ply, None)
 
 	if node.is_stalemate():
 		return (0, None)
@@ -427,7 +447,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH, ply=0, pv_move=None, null_m
 
 	if depth == 0:
 		# Use quiescence search instead of static eval
-		return (quiesce(node, a, b, color, variant), None)
+		return (quiesce(node, a, b, color, variant, ply=ply), None)
 
 	# Null move pruning
 	# Skip if: in check, low depth, or null move not allowed (to prevent consecutive nulls)
@@ -538,7 +558,7 @@ def negamax(node, a, b, color, variant, depth=DEPTH, ply=0, pv_move=None, null_m
 				del transposition_table[first_key]
 			except StopIteration:
 				pass
-		transposition_table[pos_hash] = (depth, best_value, tt_flag, best_move)
+		transposition_table[pos_hash] = (depth, score_to_tt(best_value, ply), tt_flag, best_move)
 
 	return (best_value, best_move)
 
