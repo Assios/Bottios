@@ -339,7 +339,12 @@ def play_game(game_id, event_queue):
 					else:
 						logger.info(f"[{game_id}] Time: {my_time_remaining/1000:.1f}s, thinking for {move_time:.2f}s")
 
-					bot_move, score = search_with_time(board, color=-start_color, variant=variant, time_limit=move_time)
+					try:
+						bot_move, score = search_with_time(board, color=-start_color, variant=variant, time_limit=move_time)
+					except Exception as e:
+						# Never forfeit on a search bug - play something legal
+						logger.error(f"[{game_id}] Search failed: {e}", exc_info=True)
+						bot_move, score = random.choice(list(board.legal_moves)), 0
 
 					# React to evaluation
 					if score <= -300 and not said_ouch:
@@ -348,6 +353,10 @@ def play_game(game_id, event_queue):
 					elif score >= 500 and not said_haha:
 						chat(game_id, "HAHA!")
 						said_haha = True
+
+				if bot_move is None:
+					logger.error(f"[{game_id}] No move found (legal moves: {board.legal_moves.count()}), skipping")
+					continue
 
 				# Avoid draw at all cost
 				def is_draw_move(b, move):
@@ -446,7 +455,6 @@ if __name__ == '__main__':
 					_id = challenge['id'].strip()
 					variant = challenge['variant']['key']
 					challenger = challenge.get('challenger', {})
-					challenger_title = challenger.get('title', '')
 					challenger_name = challenger.get('name', 'Unknown')
 					time_control = challenge.get('timeControl', {})
 					speed = challenge.get('speed', 'unknown')
@@ -464,12 +472,6 @@ if __name__ == '__main__':
 					if variant not in supported_variants:
 						logger.info(f"Declining {challenger_name}: unsupported variant {variant}")
 						decline_challenge(_id, reason='variant')
-						continue
-
-					# Don't accept challenges from other bots
-					if challenger_title == 'BOT':
-						logger.info(f"Declining {challenger_name}: is a BOT")
-						decline_challenge(_id, reason='noBot')
 						continue
 
 					# Decline ultrabullet - too fast for this bot

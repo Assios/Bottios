@@ -330,12 +330,12 @@ def search_with_time(node, color, variant, time_limit, min_depth=1, max_depth=20
 	moves = list(node.legal_moves)
 	if not moves:
 		print('Game over.')
-		return None
+		return None, 0
 
 	if len(moves) == 1:
 		# Only one legal move, just play it
 		print(f"Only one legal move: {moves[0]}")
-		return moves[0]
+		return moves[0], 0
 
 	best_move = None
 	best_score = -inf
